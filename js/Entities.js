@@ -278,7 +278,7 @@ Enemy.randomlyGenerate = function(){
 		Enemy(id,x,y,width,height,Img.bee,1,3);
 }
 
-//#####
+
 Upgrade = function (id,x,y,width,height,category,img){
 	var self = Entity('upgrade',id,x,y,width,height,img);
 	
