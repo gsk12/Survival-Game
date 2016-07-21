@@ -1,0 +1,193 @@
+<html>
+
+<style type="text/css">
+	
+
+	body {
+
+		margin-left: 40%;
+			margin-top: 10%;
+		background-color: black;	
+
+	}
+
+h2 {
+
+font-family: monospace;
+color:red;
+font-size: 3em;
+
+}
+
+
+
+</style>
+
+
+<body>
+<div id="head">
+<h2> Survival Game </h2>
+</div>
+<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<script src="js/Entities.js"></script>
+<script> 
+var ctx = document.getElementById("ctx").getContext("2d"); 
+ctx.fillStyle = "white"; 
+ctx.font = '30px Arial ';
+
+ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+ctx.msImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
+			
+var WIDTH = 500;
+var HEIGHT = 500;
+var timeWhenGameStarted = Date.now();	//return time in ms
+
+var frameCount = 0;
+
+var score = 0;
+
+var paused = false;
+
+var Img = {};
+Img.player = new Image();
+Img.player.src = "img/player.png";
+Img.bat = new Image();
+Img.bat.src = 'img/bat.png';
+Img.bee = new Image();
+Img.bee.src = 'img/bee.png';
+Img.bullet = new Image();
+Img.bullet.src = 'img/bullet.png';
+Img.upgrade1 = new Image();
+Img.upgrade1.src = 'img/upgrade1.png';
+Img.upgrade2 = new Image();
+Img.upgrade2.src = 'img/upgrade2.png';
+
+testCollisionRectRect = function(rect1,rect2){
+	return rect1.x <= rect2.x+rect2.width 
+		&& rect2.x <= rect1.x+rect1.width
+		&& rect1.y <= rect2.y + rect2.height
+		&& rect2.y <= rect1.y + rect1.height;
+}
+
+document.onmousedown = function(mouse){
+	if(mouse.which === 1)
+		player.pressingMouseLeft = true;
+	else
+		player.pressingMouseRight = true;
+}
+document.onmouseup = function(mouse){
+	if(mouse.which === 1)
+		player.pressingMouseLeft = false;
+	else
+		player.pressingMouseRight = false;
+}
+document.oncontextmenu = function(mouse){
+	mouse.preventDefault();
+}
+
+document.onmousemove = function(mouse){
+	var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
+	var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
+	
+	mouseX -= WIDTH/2;
+	mouseY -= HEIGHT/2;
+	
+	player.aimAngle = Math.atan2(mouseY,mouseX) / Math.PI * 180;
+}
+
+document.onkeydown = function(event){
+	if(event.keyCode === 68)	//d
+		player.pressingRight = true;
+	else if(event.keyCode === 83)	//s
+		player.pressingDown = true;
+	else if(event.keyCode === 65) //a
+		player.pressingLeft = true;
+	else if(event.keyCode === 87) // w
+		player.pressingUp = true;
+		
+	else if(event.keyCode === 80) //p
+		paused = !paused;
+}
+
+document.onkeyup = function(event){
+	if(event.keyCode === 68)	//d
+		player.pressingRight = false;
+	else if(event.keyCode === 83)	//s
+		player.pressingDown = false;
+	else if(event.keyCode === 65) //a
+		player.pressingLeft = false;
+	else if(event.keyCode === 87) // w
+		player.pressingUp = false;
+}
+
+update = function(){
+	if(paused){
+		ctx.fillText('Paused',WIDTH/2,HEIGHT/2);
+		return;
+	}
+	
+	ctx.clearRect(0,0,WIDTH,HEIGHT);
+	Maps.current.draw();
+	frameCount++;
+	score++;
+	
+	
+	Bullet.update();
+	Upgrade.update();
+	Enemy.update();
+	
+	player.update();
+	
+	ctx.fillText(player.hp + " Hp",0,30);
+	ctx.fillText('Score: ' + score,200,30);
+}
+
+startNewGame = function(){
+	player.hp = 10;
+	timeWhenGameStarted = Date.now();
+	frameCount = 0;
+	score = 0;
+	Enemy.list = {};
+	Upgrade.list = {};
+	Bullet.list = {};
+	Enemy.randomlyGenerate();
+	Enemy.randomlyGenerate();
+	Enemy.randomlyGenerate();
+	
+}
+
+Maps = function(id,imgSrc,width,height){
+	var self = {
+		id:id,
+		image:new Image(),
+		width:width,
+		height:height	
+	}
+	self.image.src = imgSrc;
+	
+	
+	self.draw = function(){
+		var x = WIDTH/2 - player.x;
+		var y = HEIGHT/2 - player.y;
+		ctx.drawImage(self.image,0,0,self.image.width,self.image.height,x,y,self.image.width*2,self.image.height*2);
+	}
+	return self;
+}
+
+Maps.current = Maps('field','img/map.png',1280,960);
+
+
+
+
+player = Player();
+startNewGame();
+
+setInterval(update,40);
+
+
+
+
+</script>
+</body>
+</html>
